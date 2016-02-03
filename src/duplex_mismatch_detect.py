@@ -26,6 +26,14 @@ class Duplex_mismatch_port:
 			+ "Late Collisions: " + str(self.collisions) + os.linesep \
 			+ "CRC Errors: " + str(self.rx_crc_err)
 
+def print_duplex_error(dpid, port, node, ext_1, ext_2):
+	if len(node) != 0:
+		print "It is possible that an auto-negocation problem occurs on the port " + str(port) + \
+		      " from the switch " + dpid + " which goes to the node " + node[0].ip + "."
+		print "The switch is probably in " + ext_1 + " and the host in " + ext_2 + "."
+	else:
+		print "Impossible to get the node ip address maybe the ARP table is empty."
+
 
 # A list wich will be fill with created Duplex_mismatch_port
 list_port_error = []
@@ -49,3 +57,13 @@ if not list_port_error:
 else:
 	for port_error in list_port_error:
 		print port_error
+
+
+# Analyze the list of errors
+for port_error in list_port_error:
+	node = api.get_nodes(dpid=port_error.dpid, port=port_error.port)
+	if port_error.collisions is not 0:
+		print_duplex_error(port_error.dpid, port_error.port, "half-duplex", "full-duplex")
+		
+	if port_error.rx_crc_err is not 0:
+		print_duplex_error(port_error.dpid, port_error.port, "full-duplex", "half-duplex")
